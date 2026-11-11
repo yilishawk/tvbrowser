@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>TV 浏览器 - 扫码添加</title>
+<style>
+  body { background:#0b0e14; color:#fff; font-family:Arial; margin:0; padding:24px; }
+  .qr { text-align:center; }
+  .qr img { width:260px; height:260px; background:#fff; padding:8px; border-radius:8px; }
+  .url { color:#58a6ff; font-size:18px; margin:12px 0; }
+  .form { max-width:480px; margin:0 auto; }
+  .form h1 { font-size:22px; margin-bottom:16px; }
+  .form label { display:block; margin:12px 0 4px; font-size:14px; color:#8b949e; }
+  .form input, .form select { width:100%; padding:10px; background:#161b22; color:#fff; border:1px solid #30363d; border-radius:6px; font-size:16px; box-sizing:border-box; }
+  .form .row { display:flex; gap:12px; }
+  .form .row > div { flex:1; }
+  .form button { width:100%; padding:12px; margin-top:16px; background:#1f6feb; color:#fff; border:none; border-radius:6px; font-size:16px; }
+  .form .msg { margin-top:12px; font-size:14px; min-height:20px; }
+  .form .ok { color:#3fb950; }
+  .form .err { color:#f85149; }
+  .hint { color:#8b949e; font-size:12px; margin-top:8px; }
+</style>
+</head>
+<body>
+<!-- 电视端：显示二维码 -->
+<div class="qr" id="tvQr">
+  <h1>TV 影视浏览器 - 扫码添加</h1>
+  <p class="hint">电视和手机需连同一 Wi-Fi，手机浏览器扫下方二维码</p>
+  <img id="qrImg" alt="QR">
+  <p class="url" id="qrUrl"></p>
+</div>
+
+<!-- 手机端：扫码后进入的 H5 表单（同一文件，通过 ?form=1 区分） -->
+<div class="form" id="phoneForm" style="display:none">
+  <h1>添加站点到电视</h1>
+  <label>站点名称</label>
+  <input id="fName" placeholder="如：华视界">
+  <div class="row">
+    <div>
+      <label>网址</label>
+      <input id="fUrl" placeholder="huashijie.tv">
+    </div>
+    <div>
+      <label>播放方式</label>
+      <select id="fPlayer">
+        <option value="WEB">WebView（加密源/直播）</option>
+        <option value="EXO">ExoPlayer（m3u8/mp4 直链）</option>
+      </select>
+    </div>
+  </div>
+  <button id="fBtn">提交到电视</button>
+  <div class="msg" id="fMsg"></div>
+  <p class="hint">电视 IP 自动从本地服务获取；若电视不在同网段请手动改</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+  var params = new URLSearchParams(location.search);
+  var isForm = params.get('form') === '1';
+  var tvIp = params.get('ip') || '';
+
+  if (isForm) {
+    document.getElementById('tvQr').style.display = 'none';
+    document.getElementById('phoneForm').style.display = 'block';
+    document.getElementById('fBtn').onclick = submitForm;
+  } else {
+    // 电视端：显示 QR
+    var formUrl = location.href.replace('?form=1', '') + '?form=1&ip=' + encodeURIComponent(tvIp);
+    document.getElementById('qrUrl').textContent = formUrl;
+    new QRCode(document.getElementById('qrImg'), { text: formUrl, width: 260, height: 260, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
+    document.getElementById('qrImg').style.display = 'block';
+  }
+
+  function submitForm() {
+    var name = document.getElementById('fName').value.trim();
+    var url = document.getElementById('fUrl').value.trim();
+    var player = document.getElementById('fPlayer').value;
+    var msg = document.getElementById('fMsg');
+    if (!url) { msg.textContent = '网址不能为空'; msg.className = 'msg err'; return; }
+    if (!url.startsWith('http')) url = 'https://' + url;
+    if (!name) name = url;
+    var ip = tvIp || prompt('电视 IP（如 192.168.1.50）：', '192.168.1.');
+    if (!ip) { msg.textContent = '未指定电视 IP'; msg.className = 'msg err'; return; }
+    fetch('http://' + ip + ':8080/add_site', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, url: url, player: player })
+    }).then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.code === 1) { msg.textContent = '已提交，电视会自动刷新卡片'; msg.className = 'msg ok'; }
+        else { msg.textContent = '提交失败：' + d.msg; msg.className = 'msg err'; }
+      })
+      .catch(function (e) {
+        msg.textContent = '网络错误：' + e.message + '（确认电视和手机同一 Wi-Fi，电视 App 在运行）';
+        msg.className = 'msg err';
+      });
+  }
+</script>
+</body>
+</html>
