@@ -8,9 +8,6 @@ buildscript {
     }
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
+// 依赖仓库统一在 settings.gradle 的 dependencyResolutionManagement 里声明，
+// 这里不要再加 allprojects { repositories { ... } }，否则会与
+// RepositoriesMode.FAIL_ON_PROJECT_REPOS 冲突导致构建失败。
