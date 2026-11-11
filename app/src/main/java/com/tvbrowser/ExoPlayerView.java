@@ -18,6 +18,7 @@ import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.PlayerView;
 
 import java.util.ArrayList;
@@ -84,7 +85,7 @@ public class ExoPlayerView extends FrameLayout {
         setBackgroundColor(Color.BLACK);
 
         pview = new PlayerView(c);
-        pview.setResizeMode(PlayerView.RESIZE_MODE_FIT);
+        pview.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
         pview.setUseController(false); // 用自绘 bar，隐藏默认 controller
         addView(pview, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
