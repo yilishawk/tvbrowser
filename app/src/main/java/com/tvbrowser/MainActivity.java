@@ -238,8 +238,8 @@ public class MainActivity extends Activity {
                 f.setFocusableInTouchMode(false);
             }
             Sites.Site s = sites.get(p);
-            final int TAG_NAME = 0x01;
-            final int TAG_BADGE = 0x02;
+            final int TAG_NAME = R.id.tag_name;
+            final int TAG_BADGE = R.id.tag_badge;
             TextView tv = (TextView) f.getTag(TAG_NAME);
             if (tv == null) {
                 tv = new TextView(MainActivity.this);
@@ -274,7 +274,8 @@ public class MainActivity extends Activity {
                 fl.setBackground(createBg(focused));
                 TextView b = (TextView) fl.getTag(TAG_BADGE);
                 if (b != null) {
-                    int bg = Color.parseColor(s.isExo() ? "#1f6feb" : "#3a3f47");
+                    int bg = Color.parseColor("EXO".equals(s.player) ? "#1f6feb"
+                            : ("MED".equals(s.player) ? "#2ea043" : "#3a3f47"));
                     int focusBg = Color.parseColor("#58a6ff");
                     b.setBackgroundColor(focused ? focusBg : bg);
                 }

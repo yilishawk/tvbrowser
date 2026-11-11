@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- View.setTag(int, Object) 的 key 必须是应用资源 id（0x7f...），
+         不能用 0x01/0x02 这类任意整数，否则运行时报
+         IllegalArgumentException: The key must be an application-specific resource id. -->
+    <item name="tag_name" type="id" />
+    <item name="tag_badge" type="id" />
+</resources>
