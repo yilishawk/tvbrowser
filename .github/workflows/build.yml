@@ -18,11 +18,15 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
+      # ubuntu-latest 已预装 Android SDK；不再用 setup-android（它会去装已被移除的 "tools" 包而失败）
       - name: Install SDK platform & build-tools
-        run: sdkmanager "platforms;android-33" "build-tools;33.0.1"
+        run: |
+          ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          SDKM=$(ls -d "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -n1)
+          echo "sdkmanager=$SDKM"
+          yes | "$SDKM" --licenses >/dev/null 2>&1 || true
+          "$SDKM" "platforms;android-33" "build-tools;33.0.1"
 
       - name: Install Gradle 7.5
         run: |
@@ -32,7 +36,9 @@ jobs:
           echo "$PWD/gradle-7.5/bin" >> $GITHUB_PATH
 
       - name: Build APK
-        run: gradle assembleDebug --no-daemon --stacktrace
+        run: |
+          echo "sdk.dir=${ANDROID_HOME:-/usr/local/lib/android/sdk}" > local.properties
+          gradle assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
