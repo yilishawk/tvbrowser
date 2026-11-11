@@ -74,11 +74,9 @@ public class MainActivity extends Activity {
         grid.setStretchMode(GridView.STRETCH_COLUMN_WIDTH);
         adapter = new SiteAdapter();
         grid.setAdapter(adapter);
-        grid.setOnItemClickListener((parent, view, position, id) -> openSite(sites.get(position)));
-        grid.setOnItemLongClickListener((parent, view, position, id) -> {
-            confirmDelete(position);
-            return true;
-        });
+        // 点击/长按交给卡片自己处理（见 SiteAdapter.getView）。
+        // 不再依赖 GridView.setOnItemClickListener：item 是 focusable 的，
+        // 部分 ROM 上 item click 不触发，表现为“点了没反应”。
         root.addView(grid, lp(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         setContentView(root);
@@ -103,7 +101,11 @@ public class MainActivity extends Activity {
     }
 
     private void openSite(Sites.Site s) {
-        if (s == null || s.url == null || s.url.isEmpty()) return;
+        if (s == null) return;
+        if (s.url == null || s.url.trim().isEmpty()) {
+            Toast.makeText(this, "该站点没有网址，请删除后重新添加", Toast.LENGTH_SHORT).show();
+            return;
+        }
         Intent it = new Intent(this, BrowserActivity.class);
         it.putExtra("url", s.url);
         it.putExtra("name", s.name);
@@ -238,6 +240,15 @@ public class MainActivity extends Activity {
                 f.setFocusableInTouchMode(false);
             }
             Sites.Site s = sites.get(p);
+            final int pos = p;
+            // 卡片自己处理点击/长按：遥控器 OK 与触摸都走这里
+            f.setClickable(true);
+            f.setLongClickable(true);
+            f.setOnClickListener(v -> openSite(s));
+            f.setOnLongClickListener(v -> {
+                confirmDelete(pos);
+                return true;
+            });
             final int TAG_NAME = R.id.tag_name;
             final int TAG_BADGE = R.id.tag_badge;
             TextView tv = (TextView) f.getTag(TAG_NAME);

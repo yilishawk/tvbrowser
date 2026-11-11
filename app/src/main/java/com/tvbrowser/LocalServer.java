@@ -87,13 +87,13 @@ public class LocalServer {
                     JSONObject j = new JSONObject(body);
                     Sites.Site site = new Sites.Site(
                             j.optString("name", "未命名"),
-                            j.optString("url", ""),
+                            j.optString("url", "").trim(),
                             j.optString("player", "WEB"));
-                    if (site.url.isEmpty() || !site.url.startsWith("http")) {
-                        site.url = "https://" + site.url;
-                    }
                     if (site.url.isEmpty()) {
                         resp = "{\"code\":0,\"msg\":\"url required\"}";
+                    } else if (!site.url.startsWith("http")) {
+                        site.url = "https://" + site.url;
+                        if (cb != null) cb.onSiteAdded(site);
                     } else if (cb != null) {
                         cb.onSiteAdded(site);
                     }

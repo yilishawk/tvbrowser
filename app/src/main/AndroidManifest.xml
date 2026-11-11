@@ -15,6 +15,7 @@
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="TV影视浏览器"
+        android:usesCleartextTraffic="true"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
 
         <activity
